@@ -152,8 +152,89 @@ def experiment_one(win_prob):
     plt.show()
 
 
+def simulate_episode_experiment_two(win_prob, n_spins=1000):
+    total_winnings = 0
+    spin_results = []
+    results_by_spin = [0]
+    last_result = True
+    bet_amount = 0
+
+    for i in range(n_spins):
+
+        if total_winnings <= -256 or total_winnings >= 80:
+            spin_results.append('')
+            results_by_spin.append(total_winnings)
+            continue
+
+        if last_result:
+            bet_amount = 1
+
+        bankroll_left = 256 + total_winnings
+        if bet_amount > bankroll_left:
+            bet_amount = bankroll_left
+
+        if get_spin_result(win_prob):
+            last_result = True
+            total_winnings += bet_amount
+            spin_results.append(bet_amount)
+            results_by_spin.append(results_by_spin[i] + bet_amount)
+        else:
+            total_winnings -= bet_amount
+            spin_results.append(-bet_amount)
+            results_by_spin.append(results_by_spin[i] - bet_amount)
+
+            if last_result:
+                last_result = False
+                bet_amount = 1
+            else:
+                bet_amount = bet_amount * 2
+
+    return total_winnings, spin_results, results_by_spin
+
+
 def experiment_two(win_prob):
-    
+
+    ## FIGURE FOUR ##
+    results = []
+
+    for i in range(1000):
+        total_winnings, spin_results, results_by_spin = simulate_episode_experiment_two(win_prob)
+        results.append(results_by_spin)
+
+    transposed_data = zip(*results)
+    means = []
+    medians = []
+    stds = []
+    for col in transposed_data:
+        means.append(np.mean(col))
+        medians.append(np.median(col))
+        stds.append(np.std(col, ddof=0))
+
+    plt.plot(means)
+    plt.xlim(0, 300)
+    plt.ylim(-256, 100)
+    plt.xlabel('Spin Number')
+    plt.ylabel('Mean Accumulated Winnings ($)')
+    plt.title('Figure 4')
+    plt.savefig('images/figure_four')
+    plt.show()
+
+    ## FIGURE FIVE ##
+    upper = [m + s for m, s in zip(medians, stds)]
+    lower = [m - s for m, s in zip(medians, stds)]
+
+    plt.plot(medians, label="Median", color="blue")
+    plt.plot(upper, label="Median + Std Dev", linestyle="--", color="green")
+    plt.plot(lower, label="Median - Std Dev", linestyle="--", color="red")
+    plt.xlim(0, 300)
+    plt.ylim(-256, 100)
+    plt.xlabel('Spin Number')
+    plt.ylabel('Median Accumulated Winnings ($)')
+    plt.title('Figure 5')
+    plt.legend()
+    plt.savefig('images/figure_five')
+    plt.show()
+
 
 def test_code():  		  	   		 	 	 		  		  		    	 		 		   		 		  
     """  		  	   		 	 	 		  		  		    	 		 		   		 		  
@@ -165,6 +246,7 @@ def test_code():
     # add your code here to implement the experiments  		  	   		 	 	 		  		  		    	 		 		   		 		  
 
     experiment_one(win_prob)
+    experiment_two(win_prob)
 
 
 if __name__ == "__main__":  		  	   		 	 	 		  		  		    	 		 		   		 		  
