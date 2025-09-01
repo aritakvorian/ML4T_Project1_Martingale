@@ -104,17 +104,29 @@ def experiment_one(win_prob):
     ## FIGURE ONE ##
     results = []
 
+    eighty = 0
+    not_eighty = 0
+
     for i in range(10):
-        _, _, results_by_spin = simulate_episode_experiment_one(win_prob)
+        total_winnings, _, results_by_spin = simulate_episode_experiment_one(win_prob)
         results.append(results_by_spin)
-        plt.plot(results_by_spin, label=f'Spin #{i+1}')
+        plt.plot(results_by_spin, label=f'Episode #{i+1}')
+
+        if total_winnings == 80:
+            eighty += 1
+        else:
+            not_eighty += 1
+
+    # print(f'Eighty: {eighty}')
+    # print(f'Not Eighty: {not_eighty}')
+    # print(f'Proportion: {eighty/(eighty+not_eighty)}')
 
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.xlabel('Spin Number')
     plt.ylabel('Accumulated Winnings ($)')
     plt.legend()
-    plt.title('Figure 1')
+    plt.title('Figure 1 - Accumulated Winnings ($)')
     plt.savefig('images/figure_one')
 
     plt.show()
@@ -129,25 +141,32 @@ def experiment_one(win_prob):
     transposed_data = zip(*results)
     means = []
     medians = []
+    stds = []
     for col in transposed_data:
         means.append(np.mean(col))
         medians.append(np.median(col))
+        stds.append(np.std(col, ddof=0))
 
     plt.plot(means)
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.xlabel('Spin Number')
     plt.ylabel('Mean Accumulated Winnings ($)')
-    plt.title('Figure 2')
+    plt.title('Figure 2 - Mean Accumulated Winnings ($)')
     plt.savefig('images/figure_two')
     plt.show()
 
-    plt.plot(medians)
+    upper = [m + s for m, s in zip(medians, stds)]
+    lower = [m - s for m, s in zip(medians, stds)]
+
+    plt.plot(medians, label="Median", color="blue")
+    plt.plot(upper, label="Median + Std Dev", linestyle="--", color="green")
+    plt.plot(lower, label="Median - Std Dev", linestyle="--", color="red")
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.xlabel('Spin Number')
     plt.ylabel('Median Accumulated Winnings ($)')
-    plt.title('Figure 3')
+    plt.title('Figure 3 - Median Accumulated Winnings ($)')
     plt.savefig('images/figure_three')
     plt.show()
 
@@ -197,9 +216,24 @@ def experiment_two(win_prob):
     ## FIGURE FOUR ##
     results = []
 
+    eighty = 0
+    not_eighty = 0
+    total_winnings_list = []
+
     for i in range(1000):
         total_winnings, spin_results, results_by_spin = simulate_episode_experiment_two(win_prob)
         results.append(results_by_spin)
+        total_winnings_list.append(total_winnings)
+
+        if total_winnings == 80:
+            eighty += 1
+        else:
+            not_eighty += 1
+
+    print(f'Eighty: {eighty}')
+    print(f'Not Eighty: {not_eighty}')
+    print(f'Proportion: {eighty/(eighty+not_eighty)}')
+    print(f'Total Winnings Mean: {np.mean(total_winnings_list)}')
 
     transposed_data = zip(*results)
     means = []
@@ -215,7 +249,7 @@ def experiment_two(win_prob):
     plt.ylim(-256, 100)
     plt.xlabel('Spin Number')
     plt.ylabel('Mean Accumulated Winnings ($)')
-    plt.title('Figure 4')
+    plt.title('Figure 4 - Mean Accumulated Winnings ($)')
     plt.savefig('images/figure_four')
     plt.show()
 
@@ -226,11 +260,11 @@ def experiment_two(win_prob):
     plt.plot(medians, label="Median", color="blue")
     plt.plot(upper, label="Median + Std Dev", linestyle="--", color="green")
     plt.plot(lower, label="Median - Std Dev", linestyle="--", color="red")
-    plt.xlim(0, 300)
+    plt.xlim(0, 1000)
     plt.ylim(-256, 100)
     plt.xlabel('Spin Number')
     plt.ylabel('Median Accumulated Winnings ($)')
-    plt.title('Figure 5')
+    plt.title('Figure 5 - Median Accumulated Winnings ($)')
     plt.legend()
     plt.savefig('images/figure_five')
     plt.show()
@@ -240,7 +274,7 @@ def test_code():
     """  		  	   		 	 	 		  		  		    	 		 		   		 		  
     Method to test your code  		  	   		 	 	 		  		  		    	 		 		   		 		  
     """  		  	   		 	 	 		  		  		    	 		 		   		 		  
-    win_prob = 0.50  # set appropriately to the probability of a win
+    win_prob = 18/38  # set appropriately to the probability of a win
     np.random.seed(gtid())  # do this only once
     print(get_spin_result(win_prob))  # test the roulette spin
     # add your code here to implement the experiments  		  	   		 	 	 		  		  		    	 		 		   		 		  
